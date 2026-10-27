@@ -1,0 +1,427 @@
+<title>ETF 계좌 배치표 | 별탱의 경제이야기</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+/* Layout: 한 장짜리 안내서. 위에서 상품을 고르면 세 계좌의 판정이 바로 나오고, 아래에 전체 표와 세금 근거가 이어진다. */
+:root {
+  --font: 'Noto Sans KR', system-ui, -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --bg: #F2F8FC;
+  --surface: #FFFFFF;
+  --ink: #10263A;
+  --muted: #4F687C;
+  --line: #D3E2EE;
+  --sky: #0E78C4;
+  --sky-soft: #E2F1FB;
+  --on-sky: #FFFFFF;
+  --best: #0B6E43;  --best-bg: #DCF2E6;
+  --ok: #17639F;    --ok-bg: #E0EEF9;
+  --warn: #8F5400;  --warn-bg: #FFEFCF;
+  --no: #8A3434;    --no-bg: #F8E1E1;
+  --check: #51558A; --check-bg: #E8E9F6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A1620; --surface: #11202E; --ink: #E5F0F8; --muted: #9DB3C5; --line: #223A4E;
+    --sky: #4DB3F5; --sky-soft: #12324A; --on-sky: #06141F;
+    --best: #5FD79A; --best-bg: #123826;
+    --ok: #6DB8F0; --ok-bg: #14344E;
+    --warn: #F0B35A; --warn-bg: #3D2C0E;
+    --no: #F09A9A; --no-bg: #402020;
+    --check: #A9ADE8; --check-bg: #26294A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A1620; --surface: #11202E; --ink: #E5F0F8; --muted: #9DB3C5; --line: #223A4E;
+  --sky: #4DB3F5; --sky-soft: #12324A; --on-sky: #06141F;
+  --best: #5FD79A; --best-bg: #123826;
+  --ok: #6DB8F0; --ok-bg: #14344E;
+  --warn: #F0B35A; --warn-bg: #3D2C0E;
+  --no: #F09A9A; --no-bg: #402020;
+  --check: #A9ADE8; --check-bg: #26294A;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.65;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 64px;
+}
+.wrap { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+section { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+.brand { font-size: 13px; font-weight: 700; color: var(--sky); letter-spacing: 0.04em; margin: 0; }
+h1 { font-size: clamp(26px, 6.4vw, 36px); line-height: 1.25; font-weight: 900; margin: 6px 0 10px; text-wrap: balance; letter-spacing: -0.01em; }
+.lead { margin: 0; color: var(--muted); max-width: 62ch; }
+.asof { display: inline-block; margin-top: 12px; font-size: 12.5px; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 2px 9px; background: var(--surface); }
+
+h2 { font-size: 20px; line-height: 1.35; font-weight: 700; margin: 0; text-wrap: balance; }
+h2 small { display: block; font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; color: var(--sky); margin-bottom: 2px; }
+.sub { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+
+/* 상품 고르기 */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font: inherit; font-size: 14px; font-weight: 500; color: var(--ink);
+  background: var(--surface); border: 1.5px solid var(--line); border-radius: 10px;
+  padding: 9px 13px; cursor: pointer; min-height: 42px;
+}
+.chip:hover { border-color: var(--sky); }
+.chip[aria-pressed="true"] { background: var(--sky); border-color: var(--sky); color: var(--on-sky); font-weight: 700; }
+:focus-visible { outline: 3px solid var(--sky); outline-offset: 2px; }
+
+.result { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.res-head h3 { margin: 0; font-size: 18px; font-weight: 700; }
+.eg { margin: 2px 0 0; font-size: 13.5px; color: var(--muted); }
+.verdict { margin: 0; font-size: 17px; line-height: 1.55; font-weight: 700; text-wrap: pretty; }
+.acc-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.acc { border: 1px solid var(--line); border-radius: 10px; padding: 12px 13px; display: flex; flex-direction: column; gap: 8px; background: var(--bg); min-width: 0; }
+.acc-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.acc h4 { margin: 0; font-size: 14.5px; font-weight: 700; }
+.acc p { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--muted); }
+.tip { margin: 0; font-size: 13.5px; background: var(--sky-soft); border-radius: 8px; padding: 10px 13px; }
+
+.pill { display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 700; padding: 2px 9px; border-radius: 6px; white-space: nowrap; }
+.v-best { color: var(--best); background: var(--best-bg); }
+.v-ok { color: var(--ok); background: var(--ok-bg); }
+.v-warn { color: var(--warn); background: var(--warn-bg); }
+.v-no { color: var(--no); background: var(--no-bg); }
+.v-check { color: var(--check); background: var(--check-bg); }
+
+/* 표 */
+.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th, td { padding: 11px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+tr:last-child th, tr:last-child td { border-bottom: 0; }
+thead th { font-size: 12.5px; font-weight: 700; color: var(--muted); background: var(--bg); letter-spacing: 0.02em; }
+tbody th { font-weight: 500; }
+tr.on th, tr.on td { background: var(--sky-soft); }
+tr.on th { font-weight: 700; }
+.matrix { min-width: 400px; }
+.matrix td { white-space: nowrap; }
+.taxtbl { min-width: 560px; }
+.taxtbl td, .taxtbl th { line-height: 1.5; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 13px; color: var(--muted); margin: 0; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* 계좌 혜택 */
+.benefits { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
+.card h3 { margin: 0 0 8px; font-size: 16px; font-weight: 700; }
+.card ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; color: var(--muted); }
+.card li strong { color: var(--ink); font-weight: 700; }
+
+.money { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.money .card h3 { font-size: 15px; }
+.money .when { margin: 0 0 6px; font-size: 12.5px; font-weight: 700; color: var(--sky); letter-spacing: 0.04em; }
+.money p { margin: 0; font-size: 13.5px; color: var(--muted); }
+
+footer { font-size: 12.5px; color: var(--muted); display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); padding-top: 18px; }
+footer p { margin: 0; }
+footer a { color: var(--sky); }
+
+.hero-icon { font-size: 34px; line-height: 1; margin-bottom: 8px; }
+.notice { margin: 14px 0 0; font-size: 13.5px; background: var(--sky-soft); border-radius: 10px; padding: 10px 14px; max-width: 62ch; }
+
+.faq { display: flex; flex-direction: column; gap: 8px; }
+.faq details { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 0 16px; min-width: 0; }
+.faq summary { cursor: pointer; font-weight: 700; font-size: 14.5px; padding: 14px 0; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "▼"; font-size: 11px; color: var(--sky); flex: none; transition: transform .15s; }
+.faq details[open] summary::after { transform: rotate(180deg); }
+.faq details p { margin: 0 0 14px; font-size: 13.5px; color: var(--muted); }
+.madeby { letter-spacing: 0.02em; }
+
+@media (max-width: 640px) {
+  .acc-grid, .benefits, .money { grid-template-columns: 1fr; }
+  .result { padding: 16px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .chip { transition: background-color .15s, border-color .15s; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="hero-icon" aria-hidden="true">📊</div>
+    <p class="brand">✨ 별탱의 경제이야기 | 2026년 10월 기준</p>
+    <h1>ETF, 어느 계좌에 담아야 세금을 아낄까?</h1>
+    <p class="lead">같은 ETF도 일반계좌, ISA, 연금저축 중 어디에 담느냐에 따라 내는 세금이 달라져요. 사려는 상품을 고르면 계좌별 궁합을 알려드려요.</p>
+    <p class="notice"><strong>🆕 최신 반영</strong> 중개형 ISA와 연금저축펀드 기준이에요. 2026년 세제개편안(생산적금융 ISA 신설 등)은 발표 단계라 아직 반영하지 않았어요.</p>
+  </header>
+
+  <section aria-labelledby="pick">
+    <h2 id="pick"><small>STEP 1</small>사려는 상품을 골라보세요</h2>
+    <div class="chips" id="chips" role="group" aria-label="상품 종류"></div>
+    <div class="result" id="result" aria-live="polite"></div>
+  </section>
+
+  <section aria-labelledby="all">
+    <h2 id="all"><small>한눈에 보기</small>상품별 계좌 궁합표</h2>
+    <div class="scroll">
+      <table class="matrix">
+        <thead><tr><th scope="col">상품</th><th scope="col">일반계좌</th><th scope="col">ISA</th><th scope="col">연금저축</th></tr></thead>
+        <tbody id="matrix"></tbody>
+      </table>
+    </div>
+    <p class="legend">
+      <span><span class="pill v-best">◎ 우선</span>먼저 담기</span>
+      <span><span class="pill v-ok">○ 가능</span>담을 수 있음</span>
+      <span><span class="pill v-warn">△ 신중</span>다른 계좌가 유리</span>
+      <span><span class="pill v-no">✕ 불가</span>살 수 없음</span>
+      <span><span class="pill v-check">? 확인</span>증권사 확인</span>
+    </p>
+  </section>
+
+  <section aria-labelledby="tax">
+    <h2 id="tax"><small>왜 이렇게 나뉘나요</small>ETF 종류별 세금 비교 (일반계좌 기준)</h2>
+    <p class="sub">궁합표의 근거예요. 절세계좌는 일반계좌에서 세금을 떼는 상품에 효과가 커요.</p>
+    <div class="scroll">
+      <table class="taxtbl">
+        <thead><tr><th scope="col">구분</th><th scope="col">투자 자산</th><th scope="col">매매차익</th><th scope="col">분배금</th><th scope="col">금융소득종합과세 포함</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">국내 주식형 ETF</th><td>국내 주식 60% 이상</td><td><strong>비과세</strong></td><td>배당소득세 15.4%</td><td>분배금</td></tr>
+          <tr><th scope="row">국내 상장 그 외 ETF</th><td>채권, 레버리지, 인버스, 해외주식 등</td><td>배당소득세 15.4%</td><td>배당소득세 15.4%</td><td>매매차익과 분배금</td></tr>
+          <tr><th scope="row">해외 상장 ETF</th><td>해외 거래소에 상장된 ETF</td><td>양도소득세 22% (연 250만 원 초과분)</td><td>미국은 15% 원천징수 후 지급</td><td>분배금</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="ben">
+    <h2 id="ben"><small>계좌별 혜택</small>세 계좌, 이것만 알면 돼요</h2>
+    <div class="benefits">
+      <article class="card">
+        <h3>일반계좌</h3>
+        <ul>
+          <li><strong>한도 없이</strong> 언제든 넣고 뺄 수 있어요.</li>
+          <li>국내 주식과 국내 주식형 ETF의 <strong>매매차익은 비과세</strong>예요.</li>
+          <li>해외 거래소 상장 ETF와 해외 주식은 이 계좌에서만 살 수 있어요.</li>
+        </ul>
+      </article>
+      <article class="card">
+        <h3>ISA</h3>
+        <ul>
+          <li>계좌 안의 손익을 합친 순이익에서 <strong>일반형 200만 원, 서민형·농어민형 400만 원</strong>까지 비과세예요.</li>
+          <li>초과분은 다른 소득과 합치지 않고 <strong>9.9%</strong>로 분리과세해요.</li>
+          <li>의무 가입 3년, 납입 한도 연 2,000만 원·총 1억 원이에요.</li>
+          <li>만기 자금을 연금계좌로 옮기면 전환액의 10%(최대 300만 원)를 추가로 세액공제 받아요.</li>
+        </ul>
+      </article>
+      <article class="card">
+        <h3>연금저축</h3>
+        <ul>
+          <li>납입액에 대해 <strong>연 600만 원</strong>까지 세액공제를 받아요. IRP와 합치면 900만 원이에요.</li>
+          <li>운용 중 세금은 <strong>연금 받을 때까지 미뤄요.</strong></li>
+          <li>요건을 갖춰 연금으로 받으면 <strong>3.3~5.5%</strong>, 연금 외로 꺼내면 <strong>16.5%</strong>예요.</li>
+          <li>연금 수령은 원칙적으로 만 55세 이상, 가입 5년 경과가 필요해요.</li>
+        </ul>
+      </article>
+    </div>
+    <p class="sub">ISA 제도는 2026년 세제개편안이 발표된 상태라, 확정되면 한도와 기간이 달라질 수 있어요.</p>
+  </section>
+
+  <section aria-labelledby="mny">
+    <h2 id="mny"><small>돈의 성격</small>계좌보다 먼저 정할 것</h2>
+    <div class="money">
+      <article class="card">
+        <p class="when">곧 쓸 돈</p>
+        <h3>주식 ETF보다 원금 안정</h3>
+        <p>전세보증금, 결혼·출산 비용, 비상금은 쓸 시점이 가까워요. 주식 ETF나 중도 인출 시 세금이 붙는 연금저축에 무리해서 넣지 않아요.</p>
+      </article>
+      <article class="card">
+        <p class="when">3년 이상 묵힐 돈</p>
+        <h3>ISA 의무 가입 기간과 맞추기</h3>
+        <p>3년 안에 쓸 일이 없는지 먼저 확인해요. 3년을 채워도 주식 손실 위험이 없어지지는 않아요.</p>
+      </article>
+      <article class="card">
+        <p class="when">노후에 쓸 돈</p>
+        <h3>연금저축으로 길게</h3>
+        <p>세액공제를 받고 오래 굴려요. 연금 요건을 못 채우고 꺼내면 16.5%가 붙으니, 쓸 일이 없는 돈만 넣어요.</p>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="faq">
+    <h2 id="faq"><small>FAQ</small>자주 묻는 질문</h2>
+    <div class="faq">
+      <details>
+        <summary>TIGER 200을 연금저축에 담으면 안 되나요?</summary>
+        <p>담을 수는 있어요. 다만 일반계좌에서는 매매차익이 비과세인데, 연금저축에서는 그 차익도 운용수익에 들어가 나중에 연금소득세(3.3~5.5%)를 내요. 일반계좌에 여유가 있다면 일반계좌가 세금 면에서 유리해요.</p>
+      </details>
+      <details>
+        <summary>ISA에 삼성전자를 담으면 손해인가요?</summary>
+        <p>손해는 아니지만 아껴지는 세금이 거의 없어요. 대주주가 아닌 일반 개인의 장내 매매차익은 일반계좌에서도 비과세라서, ISA의 비과세 한도를 쓸 곳이 배당소득뿐이에요. 한도는 세금이 붙는 상품에 쓰는 쪽이 효율적이에요.</p>
+      </details>
+      <details>
+        <summary>연금저축 세액공제는 뭘 사도 받나요?</summary>
+        <p>세액공제는 돈을 넣는 시점에 받는 혜택이라 안에서 어떤 상품을 사든 관계없어요. 상품 선택이 바꾸는 것은 운용 중 쌓이는 수익에 붙는 세금이에요.</p>
+      </details>
+      <details>
+        <summary>VOO나 QQQ를 ISA나 연금저축에서 살 수 있나요?</summary>
+        <p>살 수 없어요. 해외 거래소에 상장된 ETF는 일반계좌(해외주식 계좌)에서만 살 수 있어요. 같은 지수를 따르는 국내 상장 ETF를 고르면 ISA와 연금저축에서 살 수 있어요.</p>
+      </details>
+      <details>
+        <summary>국내 상장 해외주식형 ETF와 해외 상장 ETF는 뭐가 달라요?</summary>
+        <p>어느 거래소에 상장됐는지가 달라요. 국내 상장 ETF는 원화로 국내 증권 계좌에서 거래하고 차익에 배당소득세 15.4%가 붙어요. 해외 상장 ETF는 차익에 양도소득세 22%(연 250만 원 공제)가 붙어요.</p>
+      </details>
+      <details>
+        <summary>연금저축을 중간에 꺼내면 어떻게 되나요?</summary>
+        <p>연금 수령 요건을 채우지 못하고 꺼내면 세액공제를 받은 원금과 운용수익에 16.5% 기타소득세가 붙어요. 공제받지 않은 원금은 과세 대상이 아니에요. 쓸 일이 가까운 돈은 넣지 않는 편이 좋아요.</p>
+      </details>
+    </div>
+  </section>
+
+  <footer>
+    <p>이 자료는 계좌별 세금 구조를 설명하는 교육용이에요. 특정 상품의 매수 추천이 아니며 원금 손실이 생길 수 있어요. 세율과 매수 가능 여부는 상품과 개인 조건에 따라 달라지니 거래 전에 증권사 안내를 확인하세요.</p>
+    <p>참고: <a href="https://core.asiae.co.kr/article/2026081915244676925" target="_blank" rel="noopener">아시아경제 국내주식형 세금 기사</a> · <a href="https://segye.com/newsView/20260614509302" target="_blank" rel="noopener">세계일보 ETF 절세 Q&amp;A</a> · <a href="https://news.mtn.co.kr/news-detail/2026080310261915519" target="_blank" rel="noopener">MTN 2026 세제개편안</a></p>
+    <p class="madeby"><strong>MADE BY</strong> 별탱의 경제이야기 · <a href="https://www.instagram.com/taengstar_" target="_blank" rel="noopener">📸 @taengstar_</a></p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var V = {
+    best: { sym: '◎', label: '우선' },
+    ok: { sym: '○', label: '가능' },
+    warn: { sym: '△', label: '신중' },
+    no: { sym: '✕', label: '불가' },
+    check: { sym: '?', label: '확인' }
+  };
+  var ACC = [['gen', '일반계좌'], ['isa', 'ISA'], ['pen', '연금저축']];
+
+  var ITEMS = [
+    {
+      id: 'kr-etf', short: '국내 주식형 ETF', name: '국내 주식형 ETF',
+      eg: '코스피200 ETF(TIGER 200 등)처럼 국내 주식을 60% 이상 담는 ETF',
+      head: '일반계좌에 담는 쪽이 유리해요. 매매차익이 이미 비과세라 절세계좌의 혜택을 쓸 곳이 없어요.',
+      tip: '다른 계좌에 여유가 없고 세액공제를 받고 싶다면 연금저축에 담는 선택도 있어요. 이 경우 나중에 연금소득세를 낸다는 점을 알고 고르세요.',
+      a: {
+        gen: ['best', '매매차익은 비과세예요. 분배금에만 배당소득세 15.4%가 붙어요.'],
+        isa: ['warn', '차익은 일반계좌에서도 비과세라 추가 혜택이 없어요. 분배금에만 ISA 혜택이 적용돼요.'],
+        pen: ['warn', '일반계좌에서는 없던 세금을 내게 돼요. 연금으로 받을 때 3.3~5.5%, 연금 외로 꺼내면 16.5%예요.']
+      }
+    },
+    {
+      id: 'kr-overseas', short: '국내상장 해외주식형 ETF', name: '국내 상장 해외주식형 ETF',
+      eg: '미국 S&P500·나스닥100 지수를 따르는, 국내 거래소에 상장된 ETF',
+      head: 'ISA와 연금저축에 담을 때 효과가 큰 유형이에요. 일반계좌에서는 차익과 분배금 모두 15.4%가 붙어요.',
+      tip: '이름에 미국이 들어가도 국내 상장 ETF인지 확인하세요. 해외 거래소에 상장된 ETF는 ISA와 연금저축에서 살 수 없어요.',
+      a: {
+        gen: ['ok', '매매차익과 분배금 모두 배당소득세 15.4%가 붙어요.'],
+        isa: ['best', '계좌 안의 손익을 합친 순이익에서 비과세 한도(200만 원, 서민형 400만 원)까지 세금이 없고, 초과분은 9.9%예요.'],
+        pen: ['best', '운용 중 세금을 미루고 연금으로 받을 때 3.3~5.5%만 내요. 납입액은 세액공제도 받아요.']
+      }
+    },
+    {
+      id: 'bond', short: '채권형 ETF', name: '국내 상장 채권형 ETF',
+      eg: '국채·회사채에 투자하는, 국내 거래소에 상장된 ETF',
+      head: 'ISA나 연금저축에 우선 담으세요. 일반계좌에서는 분배금과 차익 모두 15.4%가 붙는 유형이에요.',
+      a: {
+        gen: ['ok', '매매차익과 분배금 모두 배당소득세 15.4%가 붙어요.'],
+        isa: ['best', '비과세 한도 안에서는 세금이 없고, 초과분도 9.9%로 낮아요.'],
+        pen: ['best', '운용 중 세금을 미루고, 연금 수령 때 3.3~5.5%를 내요. 안정 자산을 오래 두기에 맞아요.']
+      }
+    },
+    {
+      id: 'lev', short: '레버리지·인버스', name: '레버리지·인버스 ETF',
+      eg: '지수의 하루 등락을 배수로 따르거나 반대로 따르는 ETF',
+      head: '연금저축에서는 살 수 없어요. ISA는 증권사 앱에서 매수 가능 여부를 먼저 확인하세요.',
+      tip: '하루 등락률을 기준으로 움직여서 오래 들고 있으면 지수와 다르게 흘러갈 수 있어요. 비중을 작게 가져가세요.',
+      a: {
+        gen: ['ok', '매매차익과 분배금에 배당소득세 15.4%가 붙어요.'],
+        isa: ['check', '증권사와 계좌 조건에 따라 달라질 수 있어요. 매수 화면에서 확인하세요.'],
+        pen: ['no', '연금저축에서는 살 수 없어요.']
+      }
+    },
+    {
+      id: 'kr-stock', short: '국내 개별주식', name: '국내 개별주식',
+      eg: '삼성전자, SK하이닉스처럼 국내 거래소에서 직접 사는 주식',
+      head: '일반계좌로 충분해요. 연금저축에서는 살 수 없고, ISA에서는 절세 효과가 크지 않아요.',
+      tip: '대주주가 아닌 일반 개인이 거래소에서 사고판 경우 기준이에요.',
+      a: {
+        gen: ['best', '매매차익은 비과세예요. 배당금에는 배당소득세 15.4%가 붙어요.'],
+        isa: ['warn', '차익은 일반계좌에서도 비과세라 ISA 혜택이 크지 않아요. 배당에만 효과가 있어요.'],
+        pen: ['no', '개별주식은 연금저축에서 직접 살 수 없어요.']
+      }
+    },
+    {
+      id: 'ov-etf', short: '해외상장 ETF', name: '해외 상장 ETF',
+      eg: 'VOO, QQQ처럼 미국 등 해외 거래소에 상장된 ETF',
+      head: '일반계좌(해외주식 계좌)에서만 살 수 있어요. 같은 지수를 ISA나 연금저축에서 사려면 국내 상장 ETF를 찾아보세요.',
+      a: {
+        gen: ['ok', '매매차익에 양도소득세 22%(연 250만 원 공제)가 붙고, 미국 ETF 분배금은 15%를 떼고 받아요.'],
+        isa: ['no', '해외 거래소에 상장된 ETF는 ISA에서 살 수 없어요.'],
+        pen: ['no', '해외 거래소에 상장된 ETF는 연금저축에서 살 수 없어요.']
+      }
+    },
+    {
+      id: 'ov-stock', short: '해외 개별주식', name: '해외 개별주식',
+      eg: '애플, 테슬라처럼 해외 거래소에서 직접 사는 주식',
+      head: '일반계좌(해외주식 계좌)에서만 살 수 있어요. ISA와 연금저축에서는 살 수 없어요.',
+      a: {
+        gen: ['ok', '매매차익에 양도소득세 22%(연 250만 원 공제)가 붙어요.'],
+        isa: ['no', '해외 거래소 주식은 ISA에서 살 수 없어요.'],
+        pen: ['no', '개별주식은 연금저축에서 직접 살 수 없어요.']
+      }
+    }
+  ];
+
+  var current = ITEMS[0].id;
+  var chipsEl = document.getElementById('chips');
+  var resultEl = document.getElementById('result');
+  var matrixEl = document.getElementById('matrix');
+
+  function pill(v) {
+    return '<span class="pill v-' + v + '"><span aria-hidden="true">' + V[v].sym + '</span>' + V[v].label + '</span>';
+  }
+
+  function renderChips() {
+    chipsEl.innerHTML = ITEMS.map(function (it) {
+      return '<button type="button" class="chip" data-id="' + it.id + '" aria-pressed="' + (it.id === current) + '">' + it.short + '</button>';
+    }).join('');
+  }
+
+  function renderResult() {
+    var it = ITEMS.filter(function (x) { return x.id === current; })[0];
+    var cards = ACC.map(function (pair) {
+      var d = it.a[pair[0]];
+      return '<article class="acc"><div class="acc-top"><h4>' + pair[1] + '</h4>' + pill(d[0]) + '</div><p>' + d[1] + '</p></article>';
+    }).join('');
+    resultEl.innerHTML =
+      '<div class="res-head"><h3>' + it.name + '</h3><p class="eg">' + it.eg + '</p></div>' +
+      '<p class="verdict">' + it.head + '</p>' +
+      '<div class="acc-grid">' + cards + '</div>' +
+      (it.tip ? '<p class="tip">' + it.tip + '</p>' : '');
+  }
+
+  function renderMatrix() {
+    matrixEl.innerHTML = ITEMS.map(function (it) {
+      return '<tr class="' + (it.id === current ? 'on' : '') + '"><th scope="row">' + it.short + '</th>' +
+        ACC.map(function (p) { return '<td>' + pill(it.a[p[0]][0]) + '</td>'; }).join('') + '</tr>';
+    }).join('');
+  }
+
+  function render() { renderChips(); renderResult(); renderMatrix(); }
+
+  chipsEl.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-id]');
+    if (!b) return;
+    current = b.getAttribute('data-id');
+    render();
+    var again = chipsEl.querySelector('[data-id="' + current + '"]');
+    if (again) again.focus();
+  });
+
+  render();
+})();
+</script>
